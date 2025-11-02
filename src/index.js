@@ -12,6 +12,7 @@ import {
   cmd_rm,
   cmd_rn,
 } from "./commands/files.js";
+import { cmd_os } from "./commands/os.js";
 
 const cliArgs = process.argv.slice(2);
 
@@ -160,6 +161,14 @@ rl.on("line", async (line) => {
         }
 
         await cmd_rm(args[0]);
+      }
+
+      case "os": {
+        if (args.length !== 1) {
+          invalidInputMessage();
+        }
+        cmd_os(args[0]);
+        break;
       }
 
       default:
