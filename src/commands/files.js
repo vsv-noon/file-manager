@@ -1,49 +1,83 @@
 import { createReadStream, createWriteStream } from "fs";
-import { mkdir, rename, unlink, writeFile } from "fs/promises";
+import {
+  access,
+  constants,
+  mkdir,
+  rename,
+  unlink,
+  writeFile,
+} from "fs/promises";
 import path from "path";
 import { operationFailedMessage } from "../messages.js";
 import { fileExists, resolvePath } from "../utils.js";
+import { error } from "console";
 
 export async function cmd_cat(file) {
   const p = resolvePath(file);
 
-  if (!fileExists(p)) {
-    return operationFailedMessage();
+  try {
+    await access(p, constants.F_OK);
+    const stream = createReadStream(p, "utf8");
+    stream.pipe(process.stdout);
+  } catch (error) {
+    console.error(error.message);
+    operationFailedMessage();
   }
-
-  const stream = createReadStream(p, "utf8");
-  stream.pipe(process.stdout);
 }
 
 export async function cmd_add(name) {
   const p = resolvePath(name);
 
-  if (fileExists(p)) {
-    return operationFailedMessage();
+  try {
+    await access(p, constants.F_OK);
+    throw new Error("File already exists");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      await writeFile(p, "");
+    } else {
+      console.error(error.message);
+      operationFailedMessage();
+    }
   }
-
-  await writeFile(p, "");
 }
 
 export async function cmd_mkdir(name) {
   const p = resolvePath(name);
 
-  if (fileExists(p)) {
-    return operationFailedMessage();
+  try {
+    await access(p, constants.F_OK);
+    throw new Error("Directory already exists");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      await mkdir(p);
+    } else {
+      console.error(error.message);
+      operationFailedMessage();
+    }
   }
-
-  await mkdir(p);
 }
 
 export async function cmd_rn(src, newName) {
   const oldPath = resolvePath(src);
   const newPath = path.join(path.dirname(oldPath), newName);
 
-  if (!fileExists(oldPath) || fileExists(newPath)) {
-    return operationFailedMessage();
+  try {
+    await access(newPath, constants.F_OK);
+    throw new Error("File already exists");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      try {
+        await access(oldPath, constants.F_OK);
+        await rename(oldPath, newName);
+      } catch (error) {
+        console.error(error.message);
+        operationFailedMessage();
+      }
+    } else {
+      console.error(error.message);
+      operationFailedMessage();
+    }
   }
-
-  await rename(oldPath, newName);
 }
 
 function copyStream(src, dest, remove = false) {
@@ -67,30 +101,56 @@ export async function cmd_cp(src, destDir) {
   const srcPath = resolvePath(src);
   const destPath = path.join(resolvePath(destDir), path.basename(src));
 
-  if (!fileExists(srcPath) || fileExists(destPath)) {
-    return operationFailedMessage();
-  }
+  try {
+    await access(destPath, constants.F_OK);
+    throw new Error("File already exists");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      try {
+        await access(srcPath, constants.F_OK);
 
-  await copyStream(srcPath, destPath);
+        await copyStream(srcPath, destPath);
+      } catch (error) {
+        console.error(error.message);
+        operationFailedMessage();
+      }
+    } else {
+      operationFailedMessage();
+    }
+  }
 }
 
 export async function cmd_mv(src, destDir) {
   const srcPath = resolvePath(src);
   const destPath = path.join(resolvePath(destDir), path.basename(src));
 
-  if (!fileExists(srcPath) || fileExists(destPath)) {
-    return operationFailedMessage();
-  }
+  try {
+    await access(destPath, constants.F_OK);
+    throw new Error("File already exists");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      try {
+        await access(srcPath, constants.F_OK);
 
-  await copyStream(srcPath, destPath, true);
+        await copyStream(srcPath, destPath, true);
+      } catch (error) {
+        console.error(error.message);
+        operationFailedMessage();
+      }
+    } else {
+      operationFailedMessage();
+    }
+  }
 }
 
 export async function cmd_rm(src) {
   const p = resolvePath(src);
 
-  if (!fileExists(p)) {
-    return operationFailedMessage();
+  try {
+    await access(p, constants.F_OK);
+    await unlink(p);
+  } catch (error) {
+    console.error(error.message);
+    operationFailedMessage();
   }
-
-  unlink(p);
 }

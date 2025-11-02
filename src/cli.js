@@ -17,17 +17,6 @@ import { cmd_hash } from "./commands/hash.js";
 import { cmd_compress, cmd_decompress } from "./commands/compress.js";
 import { cmd_cd, cmd_ls, cmd_up } from "./commands/navigation.js";
 
-export function parseArgs(argv) {
-  const usernameArg = argv.find((arg) => arg.startsWith("--username="));
-
-  if (!usernameArg) {
-    invalidInputMessage();
-    process.exit(1);
-  }
-
-  return { username: usernameArg.split("=")[1] };
-}
-
 export async function handleCommand(input, username) {
   if (!input) return;
 

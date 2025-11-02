@@ -18,7 +18,7 @@ export async function cmd_up() {
   const parentDir = path.join(currentDir, "..");
 
   try {
-    if (os.homedir() !== currentDir) {
+    if (parentDir !== currentDir) {
       process.chdir(parentDir);
     } else {
       console.log("You are already in the root directory");

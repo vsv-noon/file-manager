@@ -1,9 +1,11 @@
 import os from "os";
 import readline from "readline";
 import { printCwd } from "./messages.js";
-import { handleCommand, parseArgs } from "./cli.js";
+import { handleCommand } from "./cli.js";
 
-const { username } = parseArgs(process.argv);
+const username =
+  process.argv.find((arg) => arg.startsWith("--username="))?.split("=")[1] ??
+  "Anonym";
 
 const home = os.homedir();
 process.chdir(home);
