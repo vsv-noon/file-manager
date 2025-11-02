@@ -9,8 +9,7 @@ import {
 } from "fs/promises";
 import path from "path";
 import { operationFailedMessage } from "../messages.js";
-import { fileExists, resolvePath } from "../utils.js";
-import { error } from "console";
+import { resolvePath } from "../utils.js";
 
 export async function cmd_cat(file) {
   const p = resolvePath(file);
