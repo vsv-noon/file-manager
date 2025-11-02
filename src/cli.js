@@ -17,6 +17,21 @@ import { cmd_hash } from "./commands/hash.js";
 import { cmd_compress, cmd_decompress } from "./commands/compress.js";
 import { cmd_cd, cmd_ls, cmd_up } from "./commands/navigation.js";
 
+function parseInput(input) {
+  const regex = /(?:"([^"]+)"|'([^']+)'|([^\s"']+))/g;
+  const args = [];
+  let match;
+
+  while ((match = regex.exec(input)) !== null) {
+    args.push(match[1] || match[2] || match[3]);
+  }
+
+  return {
+    cmd: args[0],
+    args: args.slice(1),
+  };
+}
+
 export async function handleCommand(input, username) {
   if (!input) return;
 
@@ -25,9 +40,7 @@ export async function handleCommand(input, username) {
     process.exit(0);
   }
 
-  const parts = input.split(" ");
-  const cmd = parts[0];
-  const args = parts.slice(1);
+  const { cmd, args } = parseInput(input.trim());
 
   try {
     switch (cmd) {

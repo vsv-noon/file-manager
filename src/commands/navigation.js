@@ -34,15 +34,22 @@ export async function cmd_ls() {
     const filesAndFolders = await readdir(process.cwd(), {
       withFileTypes: true,
     });
-    const folders = filesAndFolders
-      .filter((el) => el.isDirectory())
-      .map((el) => el.name);
-    const files = filesAndFolders
-      .filter((el) => el.isFile())
-      .map((el) => el.name);
-    folders.sort().forEach((folder) => console.log(`<DIR> ${folder}`));
 
-    files.sort().forEach((file) => console.log(`<file> ${file}`));
+    const list = filesAndFolders
+      .map((item) => ({
+        Name: item.name,
+        Type: item.isDirectory() ? "directory" : "file",
+      }))
+      .sort((a, b) => {
+        if (a.Type !== b.Type) {
+          return a.Type === "Directory" ? -1 : 1;
+        }
+
+        return a.Name.localeCompare(b.Name);
+      });
+
+    console.log("\n");
+    console.table(list);
   } catch (error) {
     console.error(error);
     operationFailedMessage();
