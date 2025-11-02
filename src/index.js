@@ -14,6 +14,7 @@ import {
 } from "./commands/files.js";
 import { cmd_os } from "./commands/os.js";
 import { cmd_hash } from "./commands/hash.js";
+import { cmd_compress, cmd_decompress } from "./commands/compress.js";
 
 const cliArgs = process.argv.slice(2);
 
@@ -177,6 +178,22 @@ rl.on("line", async (line) => {
           invalidInputMessage();
         }
         cmd_hash(args[0]);
+        break;
+      }
+
+      case "compress": {
+        if (args.length !== 2) {
+          invalidInputMessage();
+        }
+        cmd_compress(args[0], args[1]);
+        break;
+      }
+
+      case "decompress": {
+        if (args.length !== 2) {
+          invalidInputMessage();
+        }
+        cmd_decompress(args[0], args[1]);
         break;
       }
 
