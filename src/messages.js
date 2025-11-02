@@ -1,7 +1,11 @@
-export const invalidInputMessage = () => {
+export function printCwd() {
+  console.log(`You are currently in ${process.cwd()}`);
+}
+
+export function invalidInputMessage() {
   console.log("Invalid input")
 }
 
-export const operationFailedMessage = () => {
+export function operationFailedMessage() {
   console.log("Operation failed");
 }
