@@ -1,5 +1,3 @@
-import { readdir } from "node:fs/promises";
-import path from "path";
 import os from "os";
 import readline from "readline";
 import { invalidInputMessage, operationFailedMessage } from "./messages.js";
@@ -15,6 +13,7 @@ import {
 import { cmd_os } from "./commands/os.js";
 import { cmd_hash } from "./commands/hash.js";
 import { cmd_compress, cmd_decompress } from "./commands/compress.js";
+import { cmd_cd, cmd_ls, cmd_up } from "./commands/navigation.js";
 
 const cliArgs = process.argv.slice(2);
 
@@ -64,42 +63,23 @@ rl.on("line", async (line) => {
   try {
     switch (cmd) {
       case "ls": {
-        const filesAndFolders = await readdir(process.cwd(), {
-          withFileTypes: true,
-        });
-        const folders = filesAndFolders
-          .filter((el) => el.isDirectory())
-          .map((el) => el.name);
-        const files = filesAndFolders
-          .filter((el) => el.isFile())
-          .map((el) => el.name);
-        folders.sort().forEach((folder) => console.log(`<DIR> ${folder}`));
-
-        files.sort().forEach((file) => console.log(`<file> ${file}`));
+        cmd_ls();
         break;
       }
 
       case "up": {
-        const parent = path.resolve(process.cwd(), "..");
-
-        if (process.cwd() !== home) {
-          process.chdir(parent);
+        if (args.length > 0) {
+          invalidInputMessage();
         }
+        cmd_up();
         break;
       }
 
       case "cd": {
         if (args.length !== 1) {
           invalidInputMessage();
-        } else {
-          const target = args[0];
-          const resolved = path.resolve(process.cwd(), target);
-          if (resolved.startsWith(home)) {
-            process.chdir(resolved);
-          } else {
-            operationFailedMessage();
-          }
         }
+        cmd_cd(args[0]);
         break;
       }
 
