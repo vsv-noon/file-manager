@@ -2,6 +2,16 @@ import { readdir } from "node:fs/promises";
 import path from "path";
 import os from "os";
 import readline from "readline";
+import { invalidInputMessage, operationFailedMessage } from "./messages.js";
+import {
+  cmd_add,
+  cmd_cat,
+  cmd_cp,
+  cmd_mkdir,
+  cmd_mv,
+  cmd_rm,
+  cmd_rn,
+} from "./commands/files.js";
 
 const cliArgs = process.argv.slice(2);
 
@@ -14,7 +24,7 @@ for (const arg of cliArgs) {
 }
 
 if (!username) {
-  console.error("Invalid input");
+  invalidInputMessage();
   process.exit(1);
 }
 
@@ -32,7 +42,6 @@ const rl = readline.createInterface({
 });
 
 rl.on("line", async (line) => {
-
   const input = (line || "").trim();
   if (!input) {
     rl.prompt();
@@ -78,23 +87,86 @@ rl.on("line", async (line) => {
 
       case "cd": {
         if (args.length !== 1) {
-          console.log("Invalid input");
+          invalidInputMessage();
         } else {
           const target = args[0];
           const resolved = path.resolve(process.cwd(), target);
           if (resolved.startsWith(home)) {
             process.chdir(resolved);
           } else {
-            console.log("Operation failed");
+            operationFailedMessage();
           }
         }
         break;
       }
+
+      case "cat": {
+        if (args.length !== 1) {
+          invalidInputMessage();
+        }
+
+        await cmd_cat(args[0]);
+        break;
+      }
+
+      case "add": {
+        if (args.length !== 1) {
+          invalidInputMessage();
+        } else {
+          await cmd_add(args[0]);
+        }
+        break;
+      }
+
+      case "mkdir": {
+        if (args.length !== 1) {
+          invalidInputMessage();
+        } else {
+          await cmd_mkdir(args[0]);
+        }
+        break;
+      }
+
+      case "rn": {
+        if (args.length !== 2) {
+          invalidInputMessage();
+        }
+
+        await cmd_rn(args[0], args[1]);
+        break;
+      }
+
+      case "cp": {
+        if (args.length !== 2) {
+          invalidInputMessage();
+        }
+
+        await cmd_cp(args[0], args[1]);
+        break;
+      }
+
+      case "mv": {
+        if (args.length !== 2) {
+          invalidInputMessage();
+        }
+
+        await cmd_mv(args[0], args[1]);
+        break;
+      }
+
+      case "rm": {
+        if (args.length !== 1) {
+          invalidInputMessage();
+        }
+
+        await cmd_rm(args[0]);
+      }
+
       default:
-        console.log("Invalid input");
+        invalidInputMessage();
     }
   } catch (err) {
-    console.log("Operation failed");
+    operationFailedMessage();
   }
 
   printCwd();
